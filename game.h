@@ -7,6 +7,11 @@
 
             // Create any necessary structs //
 
+typedef struct player {
+     int row;
+     int col;
+     int health;   
+} Player;
 
 /*
 * For example, for a Snake game, one could be:

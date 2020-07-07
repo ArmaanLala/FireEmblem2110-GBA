@@ -22,6 +22,11 @@ typedef enum
 
 int main(void)
 {
+  Player character;
+  character.health = 3;
+  character.row = 10;
+  character.col = 10;
+
   /* TODO: */
   // Manipulate REG_DISPCNT here to set Mode 3. //
   REG_DISPCNT = MODE3 | BG2_ENABLE;
@@ -34,6 +39,13 @@ int main(void)
 
   while (1)
   {
+    if (character.health == 0){
+      state = LOSE;
+    }
+
+    char str1[16]; // this will allocate memory while defination
+    sprintf(str1, "You have %d lives", character.health);
+    // printf(health);
     currentButtons = BUTTONS; // Load the current state of the buttons
 
     /* TODO: */
@@ -43,12 +55,16 @@ int main(void)
     switch (state)
     {
     case START:
+      if (KEY_DOWN(BUTTON_B, currentButtons) && !KEY_DOWN(BUTTON_B, previousButtons))
+      {
+        drawCenteredString(HEIGHT / 2, WIDTH / 2, 0, 10, str1, WHITE);
+      }
+      if (KEY_DOWN(BUTTON_A, currentButtons) && !KEY_DOWN(BUTTON_A, previousButtons))
+      {
+        fillScreenDMA(BLACK);
+        character.health = character.health - 1;
+      }
 
-      drawRectDMA(0,0,240,10,MAGENTA);
-      drawRectDMA(10,0,10,140,BLUE);
-      drawRectDMA(10,230,10,140,RED);
-      drawRectDMA(150,0,240,10,MAGENTA);
-      drawImageDMA( (HEIGHT/2) - (GARBAGE_HEIGHT/2) ,(WIDTH/2) - (GARBAGE_WIDTH/2), GARBAGE_WIDTH, GARBAGE_HEIGHT, garbage);
       // state = ?
       break;
     case PLAY:
@@ -60,13 +76,31 @@ int main(void)
       // state = ?
       break;
     case LOSE:
-
+    fillScreenDMA(BLACK);
+      // drawImageDMA(character.row,character.col, LYN_WIDTH,LYN_HEIGHT,Lyn);
+      if (KEY_DOWN(BUTTON_UP, currentButtons) && !KEY_DOWN(BUTTON_UP, previousButtons))
+      {
+        character.row -=10;
+      }
+      if (KEY_DOWN(BUTTON_DOWN, currentButtons) && !KEY_DOWN(BUTTON_DOWN, previousButtons))
+      {
+        character.row +=10;
+      }
+      if (KEY_DOWN(BUTTON_LEFT, currentButtons) && !KEY_DOWN(BUTTON_LEFT, previousButtons))
+      {
+        character.col -=10;
+      }
+      if (KEY_DOWN(BUTTON_RIGHT, currentButtons) && !KEY_DOWN(BUTTON_RIGHT, previousButtons))
+      {
+        character.col +=10;
+      }
       // state = ?
       break;
     }
 
     previousButtons = currentButtons; // Store the current state of the buttons
   }
+  UNUSED(character);
 
   UNUSED(previousButtons); // You can remove this once previousButtons is used
 
