@@ -50,7 +50,7 @@ void drawFullScreenImageDMA(const u16 *image)
   // TODO: Figure out what .cnt is and which values to use
   DMA[DMA_CHANNEL_3].src = image;
   DMA[DMA_CHANNEL_3].dst = videoBuffer;
-  DMA[DMA_CHANNEL_3].cnt = (WIDTH * HEIGHT) | DMA_ON | DMA_SOURCE_FIXED | DMA_DESTINATION_INCREMENT;
+  DMA[DMA_CHANNEL_3].cnt = (WIDTH * HEIGHT) | DMA_ON | DMA_SOURCE_INCREMENT | DMA_DESTINATION_INCREMENT;
 }
 
 void drawImageDMA(int row, int col, int width, int height, const u16 *image)

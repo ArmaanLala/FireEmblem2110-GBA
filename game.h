@@ -10,7 +10,10 @@
 typedef struct player {
      int row;
      int col;
-     int health;   
+     int health;
+     int male;
+     int female;
+
 } Player;
 
 /*
