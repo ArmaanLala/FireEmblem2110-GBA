@@ -13,8 +13,6 @@ typedef struct character {
      int health;
      int male;
      int female;
-     int height;
-     int width;
      unsigned short * sprite;
      unsigned short sprite1[256];
      unsigned short sprite2[256];

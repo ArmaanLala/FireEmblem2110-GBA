@@ -59,6 +59,7 @@ void drawImageDMA(int row, int col, int width, int height, const u16 *image)
   for (int r = 0; r < height; r++)
   {
     DMA[DMA_CHANNEL_3].src = &image[OFFSET(r, 0, width)];
+    // DMA[DMA_CHANNEL_3].src = image + r*width;
     DMA[DMA_CHANNEL_3].dst = videoBuffer + OFFSET(row + r, col, WIDTH);
     DMA[DMA_CHANNEL_3].cnt = (width) | DMA_ON | DMA_SOURCE_INCREMENT | DMA_DESTINATION_INCREMENT;
   }

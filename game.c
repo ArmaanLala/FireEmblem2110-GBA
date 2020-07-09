@@ -39,9 +39,12 @@ int main(void)
 {
 
   Character player;
+
   player.health = 3;
+  
   player.row = 0;
   player.col = 0;
+
   player.male = 0;
   player.female = 0;
   player.counter = 0;
@@ -68,9 +71,6 @@ int main(void)
     {
       state = LOSE;
     }
-
-    char str1[16]; // this will allocate memory while defination
-    sprintf(str1, "You have %d lives", player.health);
 
     currentButtons = BUTTONS; // Load the current state of the buttons
 
@@ -175,6 +175,7 @@ int main(void)
 
     case DRAWMAP:
       drawFullScreenImageDMA(Map);
+      // fillScreenDMA(BLACK);
       state = MAP;
       break;
 
@@ -187,6 +188,22 @@ int main(void)
 
       drawImageDMA(player.row, player.col, 16, 16, player.sprite);
 
+      if ( KEY_DOWN(BUTTON_DOWN,currentButtons)  && !KEY_DOWN(BUTTON_DOWN,previousButtons)){
+        player.row += 16;
+      }
+      if ( KEY_DOWN(BUTTON_UP,currentButtons)  && !KEY_DOWN(BUTTON_UP,previousButtons)){
+        player.row -= 16;
+      }
+      if ( KEY_DOWN(BUTTON_RIGHT,currentButtons)  && !KEY_DOWN(BUTTON_RIGHT,previousButtons)){
+        player.col += 16;
+      }
+      if ( KEY_DOWN(BUTTON_LEFT,currentButtons)  && !KEY_DOWN(BUTTON_LEFT,previousButtons)){
+        player.col -= 16;
+      }
+
+      // if ( KEY_DOWN(BUTTON_RIGHT,currentButtons)){
+      //   player.col += 40;
+      // }
 
       break;
     case WIN:
