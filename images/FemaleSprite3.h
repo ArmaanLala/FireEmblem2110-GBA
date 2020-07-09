@@ -1,7 +1,7 @@
 /*
  * Exported with nin10kit v1.7
  * Invocation command was nin10kit --mode=3 FemaleSprite3 FemaleSprite3.png 
- * Time-stamp: Thursday 07/09/2020, 01:23:12
+ * Time-stamp: Thursday 07/09/2020, 17:04:20
  * 
  * Image Information
  * -----------------

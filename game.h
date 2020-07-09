@@ -21,6 +21,20 @@ typedef struct character {
 
 } Character;
 
+typedef struct boss {
+     int row;
+     int col;
+     int health;
+     int male;
+     int female;
+     unsigned short * sprite;
+     unsigned short sprite1[1054];
+     unsigned short sprite2[1054];
+     unsigned short sprite3[1054];
+     int counter;
+
+} Boss;
+
 typedef struct arrow {
      int row;
      int col;

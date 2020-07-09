@@ -18,6 +18,16 @@
 #include "images/FemaleSprite.h"
 #include "images/FemaleSprite2.h"
 #include "images/FemaleSprite3.h"
+#include "images/Boss1.h"
+#include "images/Boss2.h"
+#include "images/Boss3.h"
+#include "images/Enemy1.h"
+#include "images/Enemy2.h"
+#include "images/Enemy3.h"
+#include "images/Anim1.h"
+#include "images/Anim2.h"
+#include "images/FemaleFight.h"
+#include "images/Pirate.h"
 /* TODO: */
 // Add any additional states you need for your app.
 typedef enum
@@ -29,11 +39,17 @@ typedef enum
   SELECT,
   DRAWMAP,
   MAP,
+  ANIM,
+  FIGHT,
+  WAIT,
   WIN,
   LOSE,
 } GBAState;
 
 void changeSprite(Character *a);
+void changeSpriteBoss(Boss *a);
+int checkBounds(int row, int col);
+void startBattle(Character *a, Character * b, GBAState *statePtr);
 
 int main(void)
 {
@@ -41,18 +57,38 @@ int main(void)
   Character player;
 
   player.health = 3;
-  
-  player.row = 0;
-  player.col = 0;
-
+  player.row = 9;
+  player.col = 1;
   player.male = 0;
   player.female = 0;
   player.counter = 0;
   player.sprite = player.sprite1;
 
+  Character enemy1;
+  enemy1.health = 1;
+  enemy1.row = 2;
+  enemy1.col = 2;
+  enemy1.sprite = enemy1.sprite1;
+
   ArrowSelect gender;
   gender.row = 126;
   gender.col = 16;
+
+  ArrowSelect rps;
+  rps.row = 126;
+  rps.col = 16;
+
+  Boss boss;
+  boss.row = 16;
+  boss.col = 160;
+  boss.health=1;
+  boss.sprite = boss.sprite1;
+  for (int i = 0; i < 1054; i++)
+  {
+    boss.sprite1[i] = Boss1[i];
+    boss.sprite2[i] = Boss2[i];
+    boss.sprite3[i] = Boss3[i];
+  }
 
   /* TODO: */
   // Manipulate REG_DISPCNT here to set Mode 3. //
@@ -67,10 +103,7 @@ int main(void)
   while (1)
   {
 
-    if (player.health == 0)
-    {
-      state = LOSE;
-    }
+   
 
     currentButtons = BUTTONS; // Load the current state of the buttons
 
@@ -151,7 +184,7 @@ int main(void)
         drawRectDMA(gender.row, 180, 7, 7, BLACK);
       }
 
-      if (KEY_DOWN(BUTTON_START, currentButtons) && !KEY_DOWN(BUTTON_START, previousButtons))
+      if (KEY_DOWN(BUTTON_A, currentButtons) && !KEY_DOWN(BUTTON_A, previousButtons))
       {
         if (gender.col == 16)
         {
@@ -161,6 +194,10 @@ int main(void)
             player.sprite1[i] = FemaleSprite[i];
             player.sprite2[i] = FemaleSprite2[i];
             player.sprite3[i] = FemaleSprite3[i];
+
+            enemy1.sprite1[i] = Enemy1[i];
+            enemy1.sprite2[i] = Enemy2[i];
+            enemy1.sprite3[i] = Enemy3[i];
           }
         }
         else if (gender.col == 180)
@@ -181,31 +218,258 @@ int main(void)
 
     case MAP:
 
+      startBattle(&player, &enemy1, &state);
+
       if (vBlankCounter % 30 == 0)
       {
         changeSprite(&player);
+        changeSprite(&enemy1);
+        changeSpriteBoss(&boss);
       }
 
-      drawImageDMA(player.row, player.col, 16, 16, player.sprite);
+      // Have to draw boss first to avoid weird tearing.
+      if (enemy1.health == 1)
+      {
 
-      if ( KEY_DOWN(BUTTON_DOWN,currentButtons)  && !KEY_DOWN(BUTTON_DOWN,previousButtons)){
-        player.row += 16;
+        drawImageDMA(enemy1.row * 16, enemy1.col * 16, 16, 16, enemy1.sprite);
       }
-      if ( KEY_DOWN(BUTTON_UP,currentButtons)  && !KEY_DOWN(BUTTON_UP,previousButtons)){
-        player.row -= 16;
+      if (boss.health == 1)
+      {
+        drawImageDMA(boss.row, boss.col, BOSS1_WIDTH, BOSS1_HEIGHT, boss.sprite);
       }
-      if ( KEY_DOWN(BUTTON_RIGHT,currentButtons)  && !KEY_DOWN(BUTTON_RIGHT,previousButtons)){
-        player.col += 16;
-      }
-      if ( KEY_DOWN(BUTTON_LEFT,currentButtons)  && !KEY_DOWN(BUTTON_LEFT,previousButtons)){
-        player.col -= 16;
-      }
+      drawImageDMA(player.row * 16, player.col * 16, 16, 16, player.sprite);
 
-      // if ( KEY_DOWN(BUTTON_RIGHT,currentButtons)){
-      //   player.col += 40;
-      // }
+      if (KEY_DOWN(BUTTON_DOWN, currentButtons) && !KEY_DOWN(BUTTON_DOWN, previousButtons) && player.row < 9 && checkBounds(player.row + 1, player.col) == 1)
+      {
+        drawBackgroundImageDMA(player.row * 16, player.col * 16, 16, 16, Map);
+        player.row += 1;
+      }
+      if (KEY_DOWN(BUTTON_UP, currentButtons) && !KEY_DOWN(BUTTON_UP, previousButtons) && player.row >= 1 && checkBounds(player.row - 1, player.col) == 1)
+      {
+        drawBackgroundImageDMA(player.row * 16, player.col * 16, 16, 16, Map);
+        player.row -= 1;
+      }
+      if (KEY_DOWN(BUTTON_RIGHT, currentButtons) && !KEY_DOWN(BUTTON_RIGHT, previousButtons) && player.col < 14 && checkBounds(player.row, player.col + 1) == 1)
+      {
+        drawBackgroundImageDMA(player.row * 16, player.col * 16, 16, 16, Map);
+        player.col += 1;
+      }
+      if (KEY_DOWN(BUTTON_LEFT, currentButtons) && !KEY_DOWN(BUTTON_LEFT, previousButtons) && player.col >= 1 && checkBounds(player.row, player.col - 1) == 1)
+      {
+        drawBackgroundImageDMA(player.row * 16, player.col * 16, 16, 16, Map);
+        player.col -= 1;
+      }
 
       break;
+
+    case ANIM:
+
+      fillScreenDMA(BLACK);
+
+      for (int i = 0; i < 120; i += 2)
+      {
+        waitForVBlank();
+        for (int j = 0; j < 240; j += 2)
+        {
+          drawBackgroundImageDMA(i, j, 2, 1, BattleGrass);
+        }
+      }
+      for (int i = 1; i < 120; i += 2)
+      {
+        waitForVBlank();
+        for (int j = 1; j < 240; j += 2)
+        {
+          drawBackgroundImageDMA(i, j, 2, 1, BattleGrass);
+        }
+      }
+      // for (int i = 1; i < 160; i+=2){
+      //   for (int j = 0; j < 240; j ++){
+
+      //   drawBackgroundImageDMA(i,j,1,1,BattleGrass);
+
+      //   }
+      //   // drawBackgroundImageDMA(0,240-i,1,160,BattleGrass);
+      // }
+      state = FIGHT;
+
+     
+
+      break;
+
+    case FIGHT:
+
+    
+      // Have to draw boss first to avoid weird tearing.
+      // drawImageDMA(boss.row, boss.col, BOSS1_WIDTH, BOSS1_HEIGHT, boss.sprite);
+      if (player.row == 2 && player.col == 2)
+      {
+        drawImageDMA(32, 176, 64, 64, Pirate);
+      }
+
+      drawImageDMA(48, 16, 64, 64, FemaleFight);
+
+      drawCenteredString(50, 0, 240, 160, "Lance", WHITE);
+      drawCenteredString(50, 80, 240, 160, "Sword", WHITE);
+      drawCenteredString(50, -80, 240, 160, "Axe", WHITE);
+      drawImageDMA(rps.row,rps.col,ARROW_WIDTH,ARROW_HEIGHT,Arrow);
+
+      if (KEY_DOWN(BUTTON_RIGHT, currentButtons) && !KEY_DOWN(BUTTON_RIGHT, previousButtons) && rps.col == 90)
+      {
+        rps.col = 170;
+        drawRectDMA(rps.row, 90, 7, 7, BLACK);
+      }
+
+       else if (KEY_DOWN(BUTTON_RIGHT, currentButtons) && !KEY_DOWN(BUTTON_RIGHT, previousButtons) && rps.col == 16)
+      {
+        rps.col = 90;
+        drawRectDMA(rps.row, 16, 7, 7, BLACK);
+      }
+
+      else if (KEY_DOWN(BUTTON_LEFT, currentButtons) && !KEY_DOWN(BUTTON_LEFT, previousButtons) && rps.col == 90 )
+      {
+        rps.col = 16;
+        drawRectDMA(rps.row, 90, 7, 7, BLACK);
+      }
+      else if (KEY_DOWN(BUTTON_LEFT, currentButtons) && !KEY_DOWN(BUTTON_LEFT, previousButtons) && rps.col == 170 )
+      {
+        rps.col = 90;
+        drawRectDMA(rps.row, 170, 7, 7, BLACK);
+      }
+     
+
+    if (KEY_DOWN(BUTTON_A, currentButtons) && !KEY_DOWN(BUTTON_A, previousButtons)){
+
+      int enemy = randint(1,3);
+
+      if (rps.col == 90){
+
+
+        if (enemy == 2){
+          //tie
+          drawCenteredString(60,0,240,160,"The enemy picked lance",WHITE);
+          drawCenteredString(70,0,240,160,"Its a tie",WHITE);
+          // player.health --;
+          player.row++;
+          state = WAIT;
+        }
+        else if (enemy == 3) {
+          drawCenteredString(60,0,240,160,"The enemy picked sword",WHITE);
+          drawCenteredString(70,0,240,160,"You won this fight",WHITE);
+          if (player.row ==2 && player.col ==2){
+            enemy1.health--;
+            // player.health --;
+          // player.row++;
+          state = WAIT;
+          }
+        }
+        else if (enemy == 1) {
+          drawCenteredString(60,0,240,160,"The enemy picked axe",WHITE);
+          drawCenteredString(70,0,240,160,"You lost this fight",WHITE);
+
+          player.health --;
+          player.row++;
+          state = WAIT;
+        }
+        
+
+      } else if (rps.col == 170){
+
+        if (enemy == 2){
+          //tie
+          drawCenteredString(60,0,240,160,"The enemy picked lance",WHITE);
+          drawCenteredString(70,0,240,160,"You lost this fight",WHITE);
+          player.health --;
+          player.row++;
+          state = WAIT;
+          
+        }
+        else if (enemy == 3) {
+          drawCenteredString(60,0,240,160,"The enemy picked sword",WHITE);
+          drawCenteredString(70,0,240,160,"Its a tie",WHITE);
+          // player.health --;
+          player.row++;
+          state = WAIT;
+          
+        }
+        else if (enemy == 1) {
+          drawCenteredString(60,0,240,160,"The enemy picked axe",WHITE);
+          drawCenteredString(70,0,240,160,"You won this fight",WHITE);
+          if (player.row ==2 && player.col ==2){
+            enemy1.health--;
+            // player.health --;
+          // player.row++;
+          state = WAIT;
+          }
+        }
+
+      } else if (rps.col == 16){
+
+        if (enemy == 2){
+          //tie
+          drawCenteredString(60,0,240,160,"The enemy picked lance",WHITE);
+          drawCenteredString(70,0,240,160,"You won this fight",WHITE);
+          if (player.row ==2 && player.col ==2){
+            enemy1.health--;
+            // player.health --;
+          // player.row++;
+          state = WAIT;
+          }
+        }
+        else if (enemy == 3) {
+          drawCenteredString(60,0,240,160,"The enemy picked sword",WHITE);
+          drawCenteredString(70,0,240,160,"You lost this fight",WHITE);
+          player.health --;
+          player.row++;
+          state = WAIT;
+        }
+        else if (enemy == 1) {
+          drawCenteredString(60,0,240,160,"The enemy picked axe",WHITE);
+          drawCenteredString(70,0,240,160,"Its a tie",WHITE);
+          // player.health --;
+          player.row++;
+          state = WAIT;
+          
+        }
+
+      }
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
+
+      // state = ?
+      break;
+
+    case WAIT:
+      if (KEY_JUST_PRESSED(BUTTON_A,currentButtons,previousButtons)){
+        state = DRAWMAP;
+      }
+    break;
+
+
+
+
+
+
+
     case WIN:
 
       // state = ?
@@ -271,5 +535,181 @@ void changeSprite(Character *a)
   else if ((a->counter) % 3 == 2)
   {
     a->sprite = a->sprite3;
+  }
+}
+
+void changeSpriteBoss(Boss *a)
+{
+  a->counter++;
+  if ((a->counter) % 3 == 0)
+  {
+    a->sprite = a->sprite1;
+  }
+  else if ((a->counter) % 3 == 1)
+  {
+    a->sprite = a->sprite2;
+  }
+  else if ((a->counter) % 3 == 2)
+  {
+    a->sprite = a->sprite3;
+  }
+}
+
+int checkBounds(int row, int col)
+{
+  if (row == 9 && col == 4)
+  {
+    return 0;
+  }
+  else if (row == 8 && col == 4)
+  {
+    return 0;
+  }
+  else if (row == 7 && col == 4)
+  {
+    return 0;
+  }
+  else if (row == 7 && col == 5)
+  {
+    return 0;
+  }
+  else if (row == 6 && col == 5)
+  {
+    return 0;
+  }
+  else if (row == 5 && col == 5)
+  {
+    return 0;
+  }
+  else if (row == 0 && col == 8)
+  {
+    return 0;
+  }
+  else if (row == 1 && col == 8)
+  {
+    return 0;
+  }
+  else if (row == 2 && col == 8)
+  {
+    return 0;
+  }
+  else if (row == 3 && col == 8)
+  {
+    return 0;
+  }
+  else if (row == 4 && col == 8)
+  {
+    return 0;
+  }
+  else if (row == 5 && col == 8)
+  {
+    return 0;
+  }
+  else if (row == 6 && col == 8)
+  {
+    return 0;
+  }
+  else if (row == 7 && col == 8)
+  {
+    return 0;
+  }
+  else if (row == 0 && col == 14)
+  {
+    return 0;
+  }
+  else if (row == 1 && col == 14)
+  {
+    return 0;
+  }
+  else if (row == 2 && col == 14)
+  {
+    return 0;
+  }
+  else if (row == 3 && col == 14)
+  {
+    return 0;
+  }
+  else if (row == 4 && col == 14)
+  {
+    return 0;
+  }
+  else if (row == 5 && col == 14)
+  {
+    return 0;
+  }
+  else if (row == 6 && col == 14)
+  {
+    return 0;
+  }
+  else if (row == 7 && col == 14)
+  {
+    return 0;
+  }
+  else if (row == 7 && col == 13)
+  {
+    return 0;
+  }
+  else if (row == 7 && col == 12)
+  {
+    return 0;
+  }
+  else if (row == 7 && col == 10)
+  {
+    return 0;
+  }
+  else if (row == 7 && col == 9)
+  {
+    return 0;
+  }
+  else if (row == 6 && col == 13)
+  {
+    return 0;
+  }
+  else if (row == 6 && col == 12)
+  {
+    return 0;
+  }
+  else if (row == 6 && col == 10)
+  {
+    return 0;
+  }
+  else if (row == 6 && col == 9)
+  {
+    return 0;
+  }
+  else if (row == 0 && col == 13)
+  {
+    return 0;
+  }
+  else if (row == 0 && col == 12)
+  {
+    return 0;
+  }
+  else if (row == 0 && col == 10)
+  {
+    return 0;
+  }
+  else if (row == 0 && col == 9)
+  {
+    return 0;
+  }
+  else if (row == 3 && col == 10)
+  {
+    return 0;
+  }
+  else if (row == 3 && col == 12)
+  {
+    return 0;
+  }
+
+  return 1;
+}
+
+void startBattle(Character *a, Character * b, GBAState *state)
+{
+
+  if (a->row == 2 && a->col == 2 && b->health ==1 )
+  {
+    *state = ANIM;
   }
 }
