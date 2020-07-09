@@ -12,27 +12,44 @@
 #include "images/Title.h"
 #include "images/Map.h"
 #include "images/Battle-Grass.h"
+#include "images/Rules-Background.h"
+#include "images/Character-Select.h"
+#include "images/Arrow.h"
+#include "images/FemaleSprite.h"
+#include "images/FemaleSprite2.h"
+#include "images/FemaleSprite3.h"
 /* TODO: */
 // Add any additional states you need for your app.
 typedef enum
 {
   START,
+  DRAWRULES,
   RULES,
-  CHARACTER,
+  DRAWSELECT,
+  SELECT,
+  DRAWMAP,
   MAP,
   WIN,
   LOSE,
 } GBAState;
 
+void changeSprite(Character *a);
+
 int main(void)
 {
 
-  Player character;
-  character.health = 3;
-  character.row = 10;
-  character.col = 10;
-  character.male = 0;
-  character.female = 0;
+  Character player;
+  player.health = 3;
+  player.row = 0;
+  player.col = 0;
+  player.male = 0;
+  player.female = 0;
+  player.counter = 0;
+  player.sprite = player.sprite1;
+
+  ArrowSelect gender;
+  gender.row = 126;
+  gender.col = 16;
 
   /* TODO: */
   // Manipulate REG_DISPCNT here to set Mode 3. //
@@ -47,14 +64,13 @@ int main(void)
   while (1)
   {
 
-
-    if (character.health == 0)
+    if (player.health == 0)
     {
       state = LOSE;
     }
 
     char str1[16]; // this will allocate memory while defination
-    sprintf(str1, "You have %d lives", character.health);
+    sprintf(str1, "You have %d lives", player.health);
 
     currentButtons = BUTTONS; // Load the current state of the buttons
 
@@ -65,88 +81,154 @@ int main(void)
     switch (state)
     {
 
-
     case START:
       drawFullScreenImageDMA(Title);
 
       if (KEY_DOWN(BUTTON_START, currentButtons))
       {
-        state = RULES;
-        fillScreenDMA(BLACK);
+        state = DRAWRULES;
+        // fillScreenDMA(BLACK);
       }
 
       // state = ?
       break;
 
+    case DRAWRULES:
+      drawFullScreenImageDMA(RulesBackground);
+      drawString(40, 5, "Hello My name is Armaan Lala", WHITE);
+      drawString(50, 5, "Welcome to my GBA game", WHITE);
+      drawString(60, 5, "This game is based off of Fire Embelem", WHITE);
+      drawString(70, 5, "Use the D-pad to move on the screen", WHITE);
+      drawString(80, 5, "Run into an enemy to fight them", WHITE);
+      drawString(90, 5, "During a fight, pick Rock, Paper,", WHITE);
+      drawString(100, 5, "or Scissors", WHITE);
+      drawString(110, 5, "You must defeat all enemies to win", WHITE);
+      drawString(120, 5, "You have three lives, Good Luck!", WHITE);
+      drawCenteredString(70, 0, 240, 160, "Press Start to continue", BLACK);
+
+      state = RULES;
+      break;
 
     case RULES:
+      if (KEY_DOWN(BUTTON_START, currentButtons) && !KEY_DOWN(BUTTON_START, previousButtons))
+      {
+        state = DRAWSELECT;
+        // fillScreenDMA(BLACK);
+      }
+      if (KEY_DOWN(BUTTON_SELECT, currentButtons))
+      {
+        state = START;
+        // fillScreenDMA(BLACK);
+      }
+      break;
 
+    case DRAWSELECT:
 
-      
-
+      drawFullScreenImageDMA(CharacterSelect);
+      // drawCenteredString(50,0,240,160,"Would you like to play as a Boy or a Girl",WHITE);
+      drawCenteredString(30, 0, 240, 160, "Which gender would you like to play as?", WHITE);
+      drawCenteredString(50, 80, 240, 160, "Boy", WHITE);
+      drawCenteredString(50, -80, 240, 160, "Girl", WHITE);
+      state = SELECT;
 
       break;
 
+    case SELECT:
+      if (KEY_DOWN(BUTTON_SELECT, currentButtons))
+      {
+        state = START;
+        // fillScreenDMA(BLACK);
+      }
+      drawImageDMA(gender.row, gender.col, ARROW_WIDTH, ARROW_HEIGHT, Arrow);
+      if (KEY_DOWN(BUTTON_RIGHT, currentButtons) && !KEY_DOWN(BUTTON_RIGHT, previousButtons))
+      {
+        gender.col = 180;
+        drawRectDMA(gender.row, 16, 7, 7, BLACK);
+      }
+      if (KEY_DOWN(BUTTON_LEFT, currentButtons) && !KEY_DOWN(BUTTON_LEFT, previousButtons))
+      {
+        gender.col = 16;
+        drawRectDMA(gender.row, 180, 7, 7, BLACK);
+      }
 
-    case CHARACTER:
+      if (KEY_DOWN(BUTTON_START, currentButtons) && !KEY_DOWN(BUTTON_START, previousButtons))
+      {
+        if (gender.col == 16)
+        {
+          player.female = 1;
+          for (int i = 0; i < 256; i++)
+          {
+            player.sprite1[i] = FemaleSprite[i];
+            player.sprite2[i] = FemaleSprite2[i];
+            player.sprite3[i] = FemaleSprite3[i];
+          }
+        }
+        else if (gender.col == 180)
+        {
+          player.male = 1;
+        }
+        state = DRAWMAP;
+        // fillScreenDMA(BLACK);
+      }
 
-      drawFullScreenImageDMA(BattleGrass);
-      
       break;
 
+    case DRAWMAP:
+      drawFullScreenImageDMA(Map);
+      state = MAP;
+      break;
 
     case MAP:
-      drawFullScreenImageDMA(Map);
+
+      if (vBlankCounter % 30 == 0)
+      {
+        changeSprite(&player);
+      }
+
+      drawImageDMA(player.row, player.col, 16, 16, player.sprite);
+
+
       break;
-
-
     case WIN:
 
-      
       // state = ?
       break;
-
 
     case LOSE:
-      
+
       // state = ?
       break;
-
-
     }
 
     previousButtons = currentButtons; // Store the current state of the buttons
   }
-  UNUSED(character);
+  UNUSED(player);
 
   UNUSED(previousButtons); // You can remove this once previousButtons is used
 
   return 0;
 }
 
-
 // TODO: Remove Unused Code
 
 //       fillScreenDMA(BLACK);
-//       drawImageDMA(character.row,character.col, LYN_WIDTH,LYN_HEIGHT,Lyn);
+//       drawImageDMA(player.row,player.col, LYN_WIDTH,LYN_HEIGHT,Lyn);
 //       if (KEY_DOWN(BUTTON_UP, currentButtons) && !KEY_DOWN(BUTTON_UP, previousButtons))
 //       {
-//         character.row -= 10;
+//         player.row -= 10;
 //       }
 //       if (KEY_DOWN(BUTTON_DOWN, currentButtons) && !KEY_DOWN(BUTTON_DOWN, previousButtons))
 //       {
-//         character.row += 10;
+//         player.row += 10;
 //       }
 //       if (KEY_DOWN(BUTTON_LEFT, currentButtons) && !KEY_DOWN(BUTTON_LEFT, previousButtons))
 //       {
-//         character.col -= 10;
+//         player.col -= 10;
 //       }
 //       if (KEY_DOWN(BUTTON_RIGHT, currentButtons) && !KEY_DOWN(BUTTON_RIGHT, previousButtons))
 //       {
-//         character.col += 10;
+//         player.col += 10;
 //       }
-
-
 
 //       if (KEY_DOWN(BUTTON_B, currentButtons) && !KEY_DOWN(BUTTON_B, previousButtons))
 //       {
@@ -155,5 +237,22 @@ int main(void)
 //       if (KEY_DOWN(BUTTON_A, currentButtons) && !KEY_DOWN(BUTTON_A, previousButtons))
 //       {
 //         fillScreenDMA(BLACK);
-//         character.health = character.health - 1;
+//         player.health = player.health - 1;
 //       }
+
+void changeSprite(Character *a)
+{
+  a->counter++;
+  if ((a->counter) % 3 == 0)
+  {
+    a->sprite = a->sprite1;
+  }
+  else if ((a->counter) % 3 == 1)
+  {
+    a->sprite = a->sprite2;
+  }
+  else if ((a->counter) % 3 == 2)
+  {
+    a->sprite = a->sprite3;
+  }
+}

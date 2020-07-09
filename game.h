@@ -7,14 +7,26 @@
 
             // Create any necessary structs //
 
-typedef struct player {
+typedef struct character {
      int row;
      int col;
      int health;
      int male;
      int female;
+     int height;
+     int width;
+     unsigned short * sprite;
+     unsigned short sprite1[256];
+     unsigned short sprite2[256];
+     unsigned short sprite3[256];
+     int counter;
 
-} Player;
+} Character;
+
+typedef struct arrow {
+     int row;
+     int col;
+} ArrowSelect;
 
 /*
 * For example, for a Snake game, one could be:
