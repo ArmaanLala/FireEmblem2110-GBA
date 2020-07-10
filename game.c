@@ -18,16 +18,27 @@
 #include "images/FemaleSprite.h"
 #include "images/FemaleSprite2.h"
 #include "images/FemaleSprite3.h"
+#include "images/MaleSprite1.h"
+#include "images/MaleSprite2.h"
+#include "images/MaleSprite3.h"
 #include "images/Boss1.h"
 #include "images/Boss2.h"
 #include "images/Boss3.h"
 #include "images/Enemy1.h"
 #include "images/Enemy2.h"
 #include "images/Enemy3.h"
+#include "images/Enemy4.h"
+#include "images/Enemy5.h"
+#include "images/Enemy6.h"
 #include "images/Anim1.h"
 #include "images/Anim2.h"
 #include "images/FemaleFight.h"
+#include "images/MaleFight.h"
 #include "images/Pirate.h"
+#include "images/Sniper.h"
+#include "images/FullHearts.h"
+#include "images/TwoHearts.h"
+#include "images/OneHeart.h"
 /* TODO: */
 // Add any additional states you need for your app.
 typedef enum
@@ -49,40 +60,24 @@ typedef enum
 void changeSprite(Character *a);
 void changeSpriteBoss(Boss *a);
 int checkBounds(int row, int col);
-void startBattle(Character *a, Character * b, GBAState *statePtr);
+void startBattle(Character *a, Character *b, Character *c, GBAState *statePtr);
 
 int main(void)
 {
 
   Character player;
-
-  player.health = 3;
-  player.row = 9;
-  player.col = 1;
-  player.male = 0;
-  player.female = 0;
-  player.counter = 0;
-  player.sprite = player.sprite1;
-
   Character enemy1;
-  enemy1.health = 1;
-  enemy1.row = 2;
-  enemy1.col = 2;
-  enemy1.sprite = enemy1.sprite1;
-
+  Character enemy2;
   ArrowSelect gender;
+  ArrowSelect rps;
+  Boss boss;
+
   gender.row = 126;
   gender.col = 16;
 
-  ArrowSelect rps;
   rps.row = 126;
   rps.col = 16;
 
-  Boss boss;
-  boss.row = 16;
-  boss.col = 160;
-  boss.health=1;
-  boss.sprite = boss.sprite1;
   for (int i = 0; i < 1054; i++)
   {
     boss.sprite1[i] = Boss1[i];
@@ -103,8 +98,6 @@ int main(void)
   while (1)
   {
 
-   
-
     currentButtons = BUTTONS; // Load the current state of the buttons
 
     /* TODO: */
@@ -122,6 +115,29 @@ int main(void)
         state = DRAWRULES;
         // fillScreenDMA(BLACK);
       }
+
+      player.health = 3;
+      player.row = 9;
+      player.col = 1;
+      player.male = 0;
+      player.female = 0;
+      player.counter = 0;
+      player.sprite = player.sprite1;
+
+      enemy1.health = 1;
+      enemy1.row = 2;
+      enemy1.col = 2;
+      enemy1.sprite = enemy1.sprite1;
+
+      enemy2.health = 1;
+      enemy2.row = 8;
+      enemy2.col = 11;
+      enemy2.sprite = enemy2.sprite1;
+
+      boss.row = 16;
+      boss.col = 160;
+      boss.health = 1;
+      boss.sprite = boss.sprite1;
 
       // state = ?
       break;
@@ -198,11 +214,30 @@ int main(void)
             enemy1.sprite1[i] = Enemy1[i];
             enemy1.sprite2[i] = Enemy2[i];
             enemy1.sprite3[i] = Enemy3[i];
+
+            enemy2.sprite1[i] = Enemy4[i];
+            enemy2.sprite2[i] = Enemy5[i];
+            enemy2.sprite3[i] = Enemy6[i];
           }
         }
         else if (gender.col == 180)
         {
           player.male = 1;
+
+          for (int i = 0; i < 256; i++)
+          {
+            player.sprite1[i] = MaleSprite1[i];
+            player.sprite2[i] = MaleSprite2[i];
+            player.sprite3[i] = MaleSprite3[i];
+
+            enemy1.sprite1[i] = Enemy1[i];
+            enemy1.sprite2[i] = Enemy2[i];
+            enemy1.sprite3[i] = Enemy3[i];
+
+            enemy2.sprite1[i] = Enemy4[i];
+            enemy2.sprite2[i] = Enemy5[i];
+            enemy2.sprite3[i] = Enemy6[i];
+          }
         }
         state = DRAWMAP;
         // fillScreenDMA(BLACK);
@@ -212,18 +247,44 @@ int main(void)
 
     case DRAWMAP:
       drawFullScreenImageDMA(Map);
+      if (player.health == 3)
+      {
+        drawImageDMA(0, 228, FULLHEARTS_WIDTH, FULLHEARTS_HEIGHT, FullHearts);
+        state = MAP;
+      }
+      else if (player.health == 2)
+      {
+        drawImageDMA(0, 228, FULLHEARTS_WIDTH, FULLHEARTS_HEIGHT, TwoHearts);
+        state = MAP;
+      }
+      else if (player.health == 1)
+      {
+        drawImageDMA(0, 228, FULLHEARTS_WIDTH, FULLHEARTS_HEIGHT, OneHeart);
+        state = MAP;
+      }
+      else if (player.health == 0)
+      {
+        state = LOSE;
+      }
       // fillScreenDMA(BLACK);
-      state = MAP;
+
       break;
 
     case MAP:
 
-      startBattle(&player, &enemy1, &state);
+      if (KEY_DOWN(BUTTON_SELECT, currentButtons))
+      {
+        state = START;
+        // fillScreenDMA(BLACK);
+      }
 
-      if (vBlankCounter % 30 == 0)
+      startBattle(&player, &enemy1, &enemy2, &state);
+
+      if (vBlankCounter % 20 == 0)
       {
         changeSprite(&player);
         changeSprite(&enemy1);
+        changeSprite(&enemy2);
         changeSpriteBoss(&boss);
       }
 
@@ -232,6 +293,11 @@ int main(void)
       {
 
         drawImageDMA(enemy1.row * 16, enemy1.col * 16, 16, 16, enemy1.sprite);
+      }
+      if (enemy2.health == 1)
+      {
+
+        drawImageDMA(enemy2.row * 16, enemy2.col * 16, 16, 16, enemy2.sprite);
       }
       if (boss.health == 1)
       {
@@ -292,26 +358,33 @@ int main(void)
       // }
       state = FIGHT;
 
-     
-
       break;
 
     case FIGHT:
 
-    
       // Have to draw boss first to avoid weird tearing.
       // drawImageDMA(boss.row, boss.col, BOSS1_WIDTH, BOSS1_HEIGHT, boss.sprite);
       if (player.row == 2 && player.col == 2)
       {
         drawImageDMA(32, 176, 64, 64, Pirate);
       }
-
-      drawImageDMA(48, 16, 64, 64, FemaleFight);
+      else if (player.row == 8 && player.col == 11)
+      {
+        drawImageDMA(20, 160, 64, 64, Sniper);
+      }
+      if (player.female == 1)
+      {
+        drawImageDMA(48, 16, 64, 64, FemaleFight);
+      }
+      else if (player.male == 1)
+      {
+        drawImageDMA(48, 16, 64, 64, MaleFight);
+      }
 
       drawCenteredString(50, 0, 240, 160, "Lance", WHITE);
       drawCenteredString(50, 80, 240, 160, "Sword", WHITE);
       drawCenteredString(50, -80, 240, 160, "Axe", WHITE);
-      drawImageDMA(rps.row,rps.col,ARROW_WIDTH,ARROW_HEIGHT,Arrow);
+      drawImageDMA(rps.row, rps.col, ARROW_WIDTH, ARROW_HEIGHT, Arrow);
 
       if (KEY_DOWN(BUTTON_RIGHT, currentButtons) && !KEY_DOWN(BUTTON_RIGHT, previousButtons) && rps.col == 90)
       {
@@ -319,156 +392,160 @@ int main(void)
         drawRectDMA(rps.row, 90, 7, 7, BLACK);
       }
 
-       else if (KEY_DOWN(BUTTON_RIGHT, currentButtons) && !KEY_DOWN(BUTTON_RIGHT, previousButtons) && rps.col == 16)
+      else if (KEY_DOWN(BUTTON_RIGHT, currentButtons) && !KEY_DOWN(BUTTON_RIGHT, previousButtons) && rps.col == 16)
       {
         rps.col = 90;
         drawRectDMA(rps.row, 16, 7, 7, BLACK);
       }
 
-      else if (KEY_DOWN(BUTTON_LEFT, currentButtons) && !KEY_DOWN(BUTTON_LEFT, previousButtons) && rps.col == 90 )
+      else if (KEY_DOWN(BUTTON_LEFT, currentButtons) && !KEY_DOWN(BUTTON_LEFT, previousButtons) && rps.col == 90)
       {
         rps.col = 16;
         drawRectDMA(rps.row, 90, 7, 7, BLACK);
       }
-      else if (KEY_DOWN(BUTTON_LEFT, currentButtons) && !KEY_DOWN(BUTTON_LEFT, previousButtons) && rps.col == 170 )
+      else if (KEY_DOWN(BUTTON_LEFT, currentButtons) && !KEY_DOWN(BUTTON_LEFT, previousButtons) && rps.col == 170)
       {
         rps.col = 90;
         drawRectDMA(rps.row, 170, 7, 7, BLACK);
       }
-     
 
-    if (KEY_DOWN(BUTTON_A, currentButtons) && !KEY_DOWN(BUTTON_A, previousButtons)){
+      if (KEY_DOWN(BUTTON_A, currentButtons) && !KEY_DOWN(BUTTON_A, previousButtons))
+      {
 
-      int enemy = randint(1,3);
+        int enemy = randint(1, 3);
 
-      if (rps.col == 90){
+        if (rps.col == 90)
+        {
 
-
-        if (enemy == 2){
-          //tie
-          drawCenteredString(60,0,240,160,"The enemy picked lance",WHITE);
-          drawCenteredString(70,0,240,160,"Its a tie",WHITE);
-          // player.health --;
-          player.row++;
-          state = WAIT;
-        }
-        else if (enemy == 3) {
-          drawCenteredString(60,0,240,160,"The enemy picked sword",WHITE);
-          drawCenteredString(70,0,240,160,"You won this fight",WHITE);
-          if (player.row ==2 && player.col ==2){
-            enemy1.health--;
+          if (enemy == 2)
+          {
+            //tie
+            drawCenteredString(60, 0, 240, 160, "The enemy picked lance", WHITE);
+            drawCenteredString(70, 0, 240, 160, "Its a tie", WHITE);
             // player.health --;
-          // player.row++;
-          state = WAIT;
+            player.row++;
+            state = WAIT;
+          }
+          else if (enemy == 3)
+          {
+            drawCenteredString(60, 0, 240, 160, "The enemy picked sword", WHITE);
+            drawCenteredString(70, 0, 240, 160, "You won this fight", WHITE);
+            if (player.row == 2 && player.col == 2)
+            {
+              enemy1.health--;
+              // player.health --;
+              // player.row++;
+              state = WAIT;
+            }
+            else if (player.row == 8 && player.col == 11)
+            {
+              enemy2.health--;
+              // player.health --;
+              // player.row++;
+              state = WAIT;
+            }
+          }
+          else if (enemy == 1)
+          {
+            drawCenteredString(60, 0, 240, 160, "The enemy picked axe", WHITE);
+            drawCenteredString(70, 0, 240, 160, "You lost this fight", WHITE);
+
+            player.health--;
+            player.row++;
+            state = WAIT;
           }
         }
-        else if (enemy == 1) {
-          drawCenteredString(60,0,240,160,"The enemy picked axe",WHITE);
-          drawCenteredString(70,0,240,160,"You lost this fight",WHITE);
+        else if (rps.col == 170)
+        {
 
-          player.health --;
-          player.row++;
-          state = WAIT;
-        }
-        
-
-      } else if (rps.col == 170){
-
-        if (enemy == 2){
-          //tie
-          drawCenteredString(60,0,240,160,"The enemy picked lance",WHITE);
-          drawCenteredString(70,0,240,160,"You lost this fight",WHITE);
-          player.health --;
-          player.row++;
-          state = WAIT;
-          
-        }
-        else if (enemy == 3) {
-          drawCenteredString(60,0,240,160,"The enemy picked sword",WHITE);
-          drawCenteredString(70,0,240,160,"Its a tie",WHITE);
-          // player.health --;
-          player.row++;
-          state = WAIT;
-          
-        }
-        else if (enemy == 1) {
-          drawCenteredString(60,0,240,160,"The enemy picked axe",WHITE);
-          drawCenteredString(70,0,240,160,"You won this fight",WHITE);
-          if (player.row ==2 && player.col ==2){
-            enemy1.health--;
+          if (enemy == 2)
+          {
+            //tie
+            drawCenteredString(60, 0, 240, 160, "The enemy picked lance", WHITE);
+            drawCenteredString(70, 0, 240, 160, "You lost this fight", WHITE);
+            player.health--;
+            player.row++;
+            state = WAIT;
+          }
+          else if (enemy == 3)
+          {
+            drawCenteredString(60, 0, 240, 160, "The enemy picked sword", WHITE);
+            drawCenteredString(70, 0, 240, 160, "Its a tie", WHITE);
             // player.health --;
-          // player.row++;
-          state = WAIT;
+            player.row++;
+            state = WAIT;
+          }
+          else if (enemy == 1)
+          {
+            drawCenteredString(60, 0, 240, 160, "The enemy picked axe", WHITE);
+            drawCenteredString(70, 0, 240, 160, "You won this fight", WHITE);
+            if (player.row == 2 && player.col == 2)
+            {
+              enemy1.health--;
+              // player.health --;
+              // player.row++;
+              state = WAIT;
+            }
+            else if (player.row == 8 && player.col == 11)
+            {
+              enemy2.health--;
+              // player.health --;
+              // player.row++;
+              state = WAIT;
+            }
           }
         }
+        else if (rps.col == 16)
+        {
 
-      } else if (rps.col == 16){
-
-        if (enemy == 2){
-          //tie
-          drawCenteredString(60,0,240,160,"The enemy picked lance",WHITE);
-          drawCenteredString(70,0,240,160,"You won this fight",WHITE);
-          if (player.row ==2 && player.col ==2){
-            enemy1.health--;
+          if (enemy == 2)
+          {
+            //tie
+            drawCenteredString(60, 0, 240, 160, "The enemy picked lance", WHITE);
+            drawCenteredString(70, 0, 240, 160, "You won this fight", WHITE);
+            if (player.row == 2 && player.col == 2)
+            {
+              enemy1.health--;
+              // player.health --;
+              // player.row++;
+              state = WAIT;
+            }
+            else if (player.row == 8 && player.col == 11)
+            {
+              enemy2.health--;
+              // player.health --;
+              // player.row++;
+              state = WAIT;
+            }
+          }
+          else if (enemy == 3)
+          {
+            drawCenteredString(60, 0, 240, 160, "The enemy picked sword", WHITE);
+            drawCenteredString(70, 0, 240, 160, "You lost this fight", WHITE);
+            player.health--;
+            player.row++;
+            state = WAIT;
+          }
+          else if (enemy == 1)
+          {
+            drawCenteredString(60, 0, 240, 160, "The enemy picked axe", WHITE);
+            drawCenteredString(70, 0, 240, 160, "Its a tie", WHITE);
             // player.health --;
-          // player.row++;
-          state = WAIT;
+            player.row++;
+            state = WAIT;
           }
         }
-        else if (enemy == 3) {
-          drawCenteredString(60,0,240,160,"The enemy picked sword",WHITE);
-          drawCenteredString(70,0,240,160,"You lost this fight",WHITE);
-          player.health --;
-          player.row++;
-          state = WAIT;
-        }
-        else if (enemy == 1) {
-          drawCenteredString(60,0,240,160,"The enemy picked axe",WHITE);
-          drawCenteredString(70,0,240,160,"Its a tie",WHITE);
-          // player.health --;
-          player.row++;
-          state = WAIT;
-          
-        }
-
       }
-
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      
 
       // state = ?
       break;
 
     case WAIT:
-      if (KEY_JUST_PRESSED(BUTTON_A,currentButtons,previousButtons)){
+      if (KEY_JUST_PRESSED(BUTTON_A, currentButtons, previousButtons))
+      {
         state = DRAWMAP;
       }
-    break;
-
-
-
-
-
-
+      break;
 
     case WIN:
 
@@ -705,10 +782,14 @@ int checkBounds(int row, int col)
   return 1;
 }
 
-void startBattle(Character *a, Character * b, GBAState *state)
+void startBattle(Character *a, Character *b, Character *c, GBAState *state)
 {
 
-  if (a->row == 2 && a->col == 2 && b->health ==1 )
+  if (a->row == 2 && a->col == 2 && b->health == 1)
+  {
+    *state = ANIM;
+  }
+  else if (a->row == 8 && a->col == 11 && c->health == 1)
   {
     *state = ANIM;
   }
