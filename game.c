@@ -423,7 +423,10 @@ int main(void)
       if (KEY_DOWN(BUTTON_A, currentButtons) && !KEY_DOWN(BUTTON_A, previousButtons))
       {
 
-        int enemy = randint(1, 3);
+        int enemy = randint(1, 4);
+        if ( enemy == 4){
+          enemy = 3;
+        }
 
         if (rps.col == 90)
         {
@@ -620,8 +623,10 @@ int main(void)
       if (KEY_DOWN(BUTTON_A, currentButtons) && !KEY_DOWN(BUTTON_A, previousButtons))
       {
 
-        int enemy = randint(1, 3);
-
+        int enemy = randint(1, 4);
+        if ( enemy == 4){
+          enemy = 3;
+        }
         if (rps.col == 90)
         {
 
