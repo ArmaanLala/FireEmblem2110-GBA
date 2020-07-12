@@ -3,7 +3,7 @@
 
 #include "gba.h"
 
-// The default player and enemy struct 
+// The default player and enemy struct
 typedef struct character
 {
      int row;
@@ -41,6 +41,5 @@ typedef struct arrow
      int row;
      int col;
 } ArrowSelect;
-
 
 #endif
