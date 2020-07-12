@@ -77,7 +77,6 @@ void drawBackgroundImageDMA(int row, int col, int width, int height, const u16 *
   }
 }
 
-
 void fillScreenDMA(volatile u16 color)
 {
   // TODO: Figure out what .cnt is and which values to use

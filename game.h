@@ -3,17 +3,15 @@
 
 #include "gba.h"
 
-                    /* TODO: */
-
-            // Create any necessary structs //
-
-typedef struct character {
+// The default player and enemy struct 
+typedef struct character
+{
      int row;
      int col;
      int health;
      int male;
      int female;
-     unsigned short * sprite;
+     unsigned short *sprite;
      unsigned short sprite1[256];
      unsigned short sprite2[256];
      unsigned short sprite3[256];
@@ -21,13 +19,15 @@ typedef struct character {
 
 } Character;
 
-typedef struct boss {
+// Had to create a seperate struct for the boss as the sprite sizes were different
+typedef struct boss
+{
      int row;
      int col;
      int health;
      int male;
      int female;
-     unsigned short * sprite;
+     unsigned short *sprite;
      unsigned short sprite1[1054];
      unsigned short sprite2[1054];
      unsigned short sprite3[1054];
@@ -35,32 +35,12 @@ typedef struct boss {
 
 } Boss;
 
-typedef struct arrow {
+// Used for menu selection
+typedef struct arrow
+{
      int row;
      int col;
 } ArrowSelect;
 
-/*
-* For example, for a Snake game, one could be:
-*
-* typedef struct snake {
-*   int heading;
-*   int length;
-*   int row;
-*   int col;
-* } Snake;
-*
-*
-* 
-*
-*
-* Example of a struct to hold state machine data:
-* 
-* typedef struct state {
-*   int currentState;
-*   int nextState;
-* } State
-*
-*/
 
 #endif

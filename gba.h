@@ -16,17 +16,17 @@ typedef unsigned char u8;
 // ---------------------------------------------------------------------------
 //                       MODE3 MACROS
 // ---------------------------------------------------------------------------
-#define OFFSET(row, col, width) ((col)+(width)*(row))
+#define OFFSET(row, col, width) ((col) + (width) * (row))
 
-#define REG_DISPCNT  *(volatile unsigned short *) 0x4000000
+#define REG_DISPCNT *(volatile unsigned short *)0x4000000
 #define MODE3 3
-#define BG2_ENABLE (1<<10)
+#define BG2_ENABLE (1 << 10)
 
-#define COLOR(r, g, b) ((r) | (g)<<5 | (b)<<10)
-#define WHITE COLOR(31,31,31)
-#define RED COLOR(31,0,0)
-#define GREEN COLOR(0,31,0)
-#define BLUE COLOR(0,0,31)
+#define COLOR(r, g, b) ((r) | (g) << 5 | (b) << 10)
+#define WHITE COLOR(31, 31, 31)
+#define RED COLOR(31, 0, 0)
+#define GREEN COLOR(0, 31, 0)
+#define BLUE COLOR(0, 0, 31)
 #define MAGENTA COLOR(31, 0, 31)
 #define CYAN COLOR(0, 31, 31)
 #define YELLOW COLOR(31, 31, 0)
@@ -43,25 +43,24 @@ extern volatile unsigned short *videoBuffer;
 // ---------------------------------------------------------------------------
 //                       BUTTON INPUT
 // ---------------------------------------------------------------------------
-#define BUTTON_A		(1<<0)
-#define BUTTON_B		(1<<1)
-#define BUTTON_SELECT	(1<<2)
-#define BUTTON_START	(1<<3)
-#define BUTTON_RIGHT	(1<<4)
-#define BUTTON_LEFT		(1<<5)
-#define BUTTON_UP		(1<<6)
-#define BUTTON_DOWN		(1<<7)
-#define BUTTON_R		(1<<8)
-#define BUTTON_L		(1<<9)
+#define BUTTON_A (1 << 0)
+#define BUTTON_B (1 << 1)
+#define BUTTON_SELECT (1 << 2)
+#define BUTTON_START (1 << 3)
+#define BUTTON_RIGHT (1 << 4)
+#define BUTTON_LEFT (1 << 5)
+#define BUTTON_UP (1 << 6)
+#define BUTTON_DOWN (1 << 7)
+#define BUTTON_R (1 << 8)
+#define BUTTON_L (1 << 9)
 
-#define BUTTONS *(volatile u32 *) 0x4000130
+#define BUTTONS *(volatile u32 *)0x4000130
 #define KEY_DOWN(key, buttons) (~(buttons) & (key))
 
-// TODO: COMPLETE THIS MACRO.
 // Remember that a button is recently pressed if it wasn't pressed in the last
 // input (oldButtons) but is pressed in the current input. Use the KEY_DOWN
 // macro to check if the button was pressed in the inputs.
-#define KEY_JUST_PRESSED(key, buttons, oldbuttons) (KEY_DOWN(key, buttons)  && !KEY_DOWN(key, oldbuttons) )
+#define KEY_JUST_PRESSED(key, buttons, oldbuttons) (KEY_DOWN(key, buttons) && !KEY_DOWN(key, oldbuttons))
 
 // ---------------------------------------------------------------------------
 //                       DMA
@@ -70,10 +69,10 @@ typedef struct
 {
 	const volatile void *src;
 	const volatile void *dst;
-	u32                  cnt;
+	u32 cnt;
 } DMA_CONTROLLER;
 
-#define DMA ((volatile DMA_CONTROLLER *) 0x040000B0)
+#define DMA ((volatile DMA_CONTROLLER *)0x040000B0)
 
 // Defines
 #define DMA_CHANNEL_0 0
